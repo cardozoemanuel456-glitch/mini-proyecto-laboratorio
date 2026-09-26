@@ -50,7 +50,8 @@ require_once __DIR__ . '/../src/Events/SmsObserver.php';
 require_once __DIR__ . '/../src/Events/DashboardObserver.php';
 require_once __DIR__ . '/../src/Events/OrderSubject.php';
 
-require_once __DIR__ . '/../src/Services/OrderService.php';
+require_once __DIR__ . '/../src/Services/OrderValidator.php';
+require_once __DIR__ . '/../src/Services/OrderFacade.php';
 require_once __DIR__ . '/../src/Controllers/OrderController.php';
 
 /*
@@ -83,9 +84,10 @@ $accion = $_GET['accion'] ?? 'crear';
 // ❌ MAL APLICADO: ruteo con if encadenados. Viola Abierto/Cerrado:
 //    cada pantalla nueva obliga a MODIFICAR este bloque.
 $controller = new OrderController();
-
 if ($accion === 'crear') {
     $controller->create();
+} elseif ($accion === 'crear-facade') {
+    $controller->createWithFacade();
 } elseif ($accion === 'listar') {
     $controller->index();
 } elseif ($accion === 'reporte') {
