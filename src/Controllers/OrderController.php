@@ -69,7 +69,31 @@ class OrderController
      *     require __DIR__ . '/../../views/orders.php'; // la vista solo presenta
      * }
      */
+/**
+     * ✅ NUEVO (TP): usa la OrderFacade en vez de repetir a mano el
+     *    switch de precio + el if de notificaciones.
+     */
+    public function createWithFacade(): void
+    {
+        $id       = (int) ($_GET['id'] ?? 1);
+        $paciente = $_GET['paciente'] ?? 'Juan Perez';
+        $monto    = (float) ($_GET['monto'] ?? 15000);
+        $tipo     = $_GET['tipo'] ?? 'obra_social';
+        $canal    = $_GET['canal'] ?? 'email';
+        $destino  = $_GET['destino'] ?? 'paciente@mail.com';
 
+        $events = new OrderSubject();
+        $events->subscribe(new EmailObserver());
+        $events->subscribe(new SmsObserver());
+        $events->subscribe(new DashboardObserver());
+
+        $facade = new OrderFacade(new OrderValidator(), new NotificationSender(), $events);
+        $order = $facade->createOrder($id, $paciente, $monto, $tipo, $canal, $destino);
+
+        echo "<h1>Pedido creado (via Facade)</h1>";
+        echo "<p>Paciente: {$order->patient}</p>";
+        echo "<p>Total: $ {$order->amount}</p>";
+    }
     /**
      * ❌ METODO MAL APLICADO: index()
      *    Delega en la vista la consulta a la base de datos (ver views/orders.php).
