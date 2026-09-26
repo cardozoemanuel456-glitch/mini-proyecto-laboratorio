@@ -1,74 +1,89 @@
 # laboratorio-pedidos — proyecto de práctica
 
 Sistema de gestión de pedidos de un laboratorio de análisis clínicos.
-**PHP Vanilla, sin frameworks, sin Composer.** Corre en XAMPP tal cual está.
+**PHP Vanilla, sin frameworks, sin Composer.** Corre en XAMPP o Laragon tal cual está.
 
-> ⚠️ **Este proyecto está roto a propósito.**
-> Cada archivo contiene deuda técnica sembrada, marcada con comentarios:
+> ⚠️ **Este proyecto estaba roto a propósito.**
+> Se refactorizaron 4 de los archivos marcados con comentarios `❌ MAL APLICADO`.
+> Los que todavía no se tocaron siguen marcados así:
 >
 > ```php
 > // ❌ MAL APLICADO: qué método está mal y qué principio viola
 > // ✅ FORMA CORRECTA: qué patrón corresponde y cómo se estructura
 > ```
->
-> El objetivo no es que funcione mejor: ya funciona. El objetivo es que
-> **se pueda cambiar sin miedo**.
 
 ---
 
 ## Cómo levantarlo
 
-1. Copiar la carpeta dentro de `C:\xampp\htdocs\`.
-2. Iniciar Apache desde el panel de XAMPP (MySQL **no** hace falta).
+1. Copiar la carpeta dentro de `C:\xampp\htdocs\` (o `C:\laragon\www\` si usás Laragon).
+2. Iniciar Apache (MySQL **no** hace falta, la persistencia está simulada en memoria).
 3. Abrir: `http://localhost/mini-proyecto-laboratorio/public/index.php`
 
 Acciones disponibles:
 
 | URL | Qué hace |
 |---|---|
-| `public/index.php?accion=crear` | Crea un pedido pasando por toda la deuda |
+| `public/index.php?accion=crear` | Crea un pedido pasando por la deuda todavía sin refactorizar del controlador |
+| `public/index.php?accion=crear-facade&tipo=prepaga&canal=whatsapp&destino=3704111111` | Crea un pedido a través de `OrderFacade`, usando **Strategy + Factory + Observer** juntos |
 | `public/index.php?accion=listar` | Lista pedidos desde la vista |
-| `public/index.php?accion=reporte` | Genera un reporte con banderas booleanas |
+| `public/index.php?accion=reporte` | Genera un reporte con banderas booleanas (pendiente de Decorator) |
 
-La persistencia está simulada en memoria para que el proyecto arranque sin
-configurar MySQL. Eso **no** es parte de la deuda a corregir.
+Parámetros que acepta `crear-facade`: `id`, `paciente`, `monto`,
+`tipo` (`particular` / `obra_social` / `jubilado` / `prepaga`),
+`canal` (`email` / `sms` / `whatsapp`), `destino`.
+
+---
+
+## Refactor aplicado en este TP (U1 + U2)
+
+Se aplicaron 4 patrones, cada uno en su propia rama y su propio Pull Request:
+
+| Rama | Patrón | Tipo | Archivo principal |
+|---|---|---|---|
+| `feat/patron-strategy` | Strategy | Comportamiento | `src/Pricing/` |
+| `feat/patron-factory` | Factory Method | Creacional | `src/Notifications/` |
+| `feat/patron-observer` | Observer | Comportamiento | `src/Events/` |
+| `feat/patron-facade` | **Facade** | Estructural | `src/Services/` |
+
+El detalle de qué deuda se encontró, en qué línea, qué patrón se aplicó y
+qué consecuencia negativa asume cada solución está en
+[`docs/DEUDA-TECNICA.md`](docs/DEUDA-TECNICA.md).
+
+Deuda identificada pero **todavía no refactorizada** (queda para una
+próxima entrega): Adapter en `src/Legacy/LegacyNotifier.php` (Ej. 3),
+Decorator en `src/Reports/ReportGenerator.php` (Ej. 4), Singleton en
+`src/Database/Connection.php`, Repository en `src/Models/Order.php`, y
+MVC en `src/Controllers/OrderController.php` + `views/orders.php`
+(Ej. 7 y 8).
 
 ---
 
 ## Mapa de deudas
 
-| Archivo | Síntoma sembrado | Patrón / principio | Ejercicio |
-|---|---|---|---|
-| `public/index.php` | Requires manuales, credenciales en el código, ruteo con `if` | Autoload + config externa + tabla de rutas | — |
-| `src/Database/Connection.php` | Una conexión nueva por consulta; excepción silenciada | **Singleton** | — |
-| `src/Notifications/NotificationSender.php` | `if` por tipo repetido en 3 archivos | **Factory** | Ej. 2 |
-| `src/Pricing/PriceCalculator.php` | `switch` con todos los algoritmos + lógica duplicada | **Strategy** | Ej. 1 |
-| `src/Events/OrderEvents.php` | Avisos encadenados a mano a clases concretas | **Observer** | Ej. 5 |
-| `src/Legacy/LegacyNotifier.php` | Clase de terceros modificada + copia y pega | **Adapter** | Ej. 3 |
-| `src/Reports/ReportGenerator.php` | Parámetros booleanos (`boolean trap`) | **Decorator** | Ej. 4 |
-| `src/Services/OrderService.php` | Método que hace de todo | **Facade** + SRP | Ej. 6 |
-| `src/Controllers/OrderController.php` | SQL + negocio + HTML en el controlador | **MVC** + SRP | Ej. 7 |
-| `src/Models/Order.php` | Modelo que se persiste y calcula precios | **Repository** + Strategy | — |
-| `views/orders.php` | Consulta, calcula y no escapa la salida | **MVC** | Ej. 8 |
+| Archivo | Síntoma sembrado | Patrón / principio | Ejercicio | Estado |
+|---|---|---|---|---|
+| `public/index.php` | Requires manuales, credenciales en el código, ruteo con `if` | Autoload + config externa + tabla de rutas | — | Pendiente |
+| `src/Database/Connection.php` | Una conexión nueva por consulta; excepción silenciada | **Singleton** | — | Pendiente |
+| `src/Pricing/` | `switch` con todos los algoritmos + lógica duplicada | **Strategy** | Ej. 1 | ✅ Resuelto (`feat/patron-strategy`) |
+| `src/Notifications/` | `if` por tipo repetido en 3 archivos | **Factory** | Ej. 2 | ✅ Resuelto (`feat/patron-factory`) |
+| `src/Legacy/LegacyNotifier.php` | Clase de terceros modificada + copia y pega | **Adapter** | Ej. 3 | Pendiente |
+| `src/Reports/ReportGenerator.php` | Parámetros booleanos (`boolean trap`) | **Decorator** | Ej. 4 | Pendiente |
+| `src/Events/` | Avisos encadenados a mano a clases concretas | **Observer** | Ej. 5 | ✅ Resuelto (`feat/patron-observer`) |
+| `src/Services/` | Método que hace de todo | **Facade** + SRP | Ej. 6 | ✅ Resuelto (`feat/patron-facade`) |
+| `src/Controllers/OrderController.php` | SQL + negocio + HTML en el controlador | **MVC** + SRP | Ej. 7 | Pendiente |
+| `src/Models/Order.php` | Modelo que se persiste y calcula precios | **Repository** + Strategy | — | Pendiente |
+| `views/orders.php` | Consulta, calcula y no escapa la salida | **MVC** | Ej. 8 | Pendiente |
 
 ---
 
 ## La medida de la deuda de este proyecto
 
-El descuento de obra social (**0.7**) está escrito en **cinco archivos distintos**:
-
-```
-src/Models/Order.php
-src/Pricing/PriceCalculator.php   (dos veces)
-src/Services/OrderService.php
-src/Controllers/OrderController.php
-views/orders.php
-```
-
-Cuando el laboratorio lo cambie al 25%, ese número es exactamente
-cuántos lugares hay que tocar y cuántas oportunidades hay de olvidarse uno.
-
-**Ese es el punto de toda la unidad.**
+El descuento de obra social (**0.7**) estaba escrito en **cinco archivos
+distintos** al empezar. Después de aplicar Strategy y Facade, quedan
+**tres**: `src/Models/Order.php`, `src/Controllers/OrderController.php`
+y `views/orders.php`. Bajarlo a cero es justamente el trabajo pendiente
+de Repository y MVC.
 
 ---
 

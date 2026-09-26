@@ -8,14 +8,16 @@ durante la ronda de refactor y la usa como descripción de su Pull Request.
 | `public/index.php` | Requires manuales, credenciales, ruteo con `if` | OCP + configuración en código | Autoload + tabla de rutas | | | |
 | `src/Database/Connection.php` | Conexión nueva por consulta, excepción silenciada | Gestión de recursos | Singleton | | | |
 | `src/Models/Order.php` | El modelo persiste y calcula precios | SRP | Repository + Strategy | | | |
-| `src/Pricing/PriceCalculator.php` | `switch` con todos los algoritmos, duplicado | OCP + DRY | Strategy | | | |
-| `src/Notifications/NotificationSender.php` | `if` por tipo repetido en 3 archivos | OCP + DIP | Factory | | | |
+| `src/Pricing/PriceCalculator.php` | `switch` con todos los algoritmos, duplicado | OCP + DRY | Strategy | Grupo ZELDA | `feat/patron-strategy` | #1 |
+| `src/Notifications/NotificationSender.php` | `if` por tipo repetido en 3 archivos | OCP + DIP | Factory | Grupo ZELDA | `feat/patron-factory` | #3, #4 (fix) |
 | `src/Legacy/LegacyNotifier.php` | Clase de terceros modificada + copia y pega | DRY + límites del sistema | Adapter | | | |
 | `src/Reports/ReportGenerator.php` | Banderas booleanas (`boolean trap`) | OCP | Decorator | | | |
-| `src/Events/OrderEvents.php` | Avisos encadenados a clases concretas | DIP | Observer | | | |
-| `src/Services/OrderService.php` | Método que hace de todo | SRP | Facade | | | |
+| `src/Events/OrderEvents.php` | Avisos encadenados a clases concretas | DIP | Observer | Grupo ZELDA | `feat/patron-observer` | #2 |
+| `src/Services/OrderService.php` | Método que hace de todo | SRP | Facade | Grupo ZELDA| `feat/patron-facade` | #5 |
 | `src/Controllers/OrderController.php` | SQL + negocio + HTML juntos | SRP + MVC | MVC | | | |
 | `views/orders.php` | Consulta, calcula y no escapa | MVC + seguridad | MVC | | | |
+
+
 
 ## Referencias
 
@@ -26,5 +28,7 @@ durante la ronda de refactor y la usa como descripción de su Pull Request.
 
 ## Métrica del proyecto
 
-El descuento de obra social (`0.7`) aparece en **5 archivos**.
-Contar cuántos quedan después del refactor: esa diferencia es el trabajo hecho.
+El descuento de obra social (`0.7`) aparecía en **5 archivos** al empezar.
+Después de Strategy y Facade quedan **3**: `Order.php`, `OrderController.php`
+y `views/orders.php`. Contar cuántos quedan después del refactor completo
+es exactamente el trabajo pendiente de Repository y MVC.
